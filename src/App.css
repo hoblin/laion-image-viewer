@@ -1,3 +1,7 @@
 body {
   font-size: 16px;
 }
+
+.ant-image.ant-image-error img {
+  opacity: 0.1;
+}

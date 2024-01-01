@@ -1,6 +1,6 @@
 {
   "name": "laion-image-viewer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "homepage": "http://hoblin.github.io/laion-image-viewer",
   "dependencies": {

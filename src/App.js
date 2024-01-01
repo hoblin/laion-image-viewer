@@ -14,6 +14,8 @@ import {
   Empty,
 } from "antd";
 import ReactGA from "react-ga4";
+
+import { fallbackImage } from "./constants";
 import "./App.css";
 
 import theme from "./theme";
@@ -172,6 +174,7 @@ function App() {
             placeholder
             preview={{ mask: false }}
             onLoad={handleImageLoad}
+            fallback={fallbackImage}
           />
         }
         title={size ? `Size: ${size.width}x${size.height}` : "Loading..."}
