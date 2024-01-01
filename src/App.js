@@ -41,6 +41,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [data, setData] = useState([]);
   const [ids, setIds] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const getColumns = () => {
     if (windowWidth <= 576) {
@@ -85,6 +86,7 @@ function App() {
 
   const fetchImages = async () => {
     try {
+      setLoading(true);
       if (search !== "") {
         if (ids.length === 0) {
           const result = await axios.post("https://knn.laion.ai/knn-service", {
@@ -124,6 +126,8 @@ function App() {
       }
     } catch (error) {
       message.error(`An error occurred: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -208,6 +212,7 @@ function App() {
             placeholder="Search for images"
             onSearch={handleSearch}
             allowClear
+            loading={loading}
           />
         </Header>
       </Layout>

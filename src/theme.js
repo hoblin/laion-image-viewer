@@ -1,10 +1,11 @@
 // Ant Design custom theme
 // https://ant.design/docs/react/customize-theme
-import { theme } from "antd"
+import { theme } from "antd";
 
 const darkTheme = {
   algorithm: theme.darkAlgorithm,
   token: {
+    fontSize: 16,
     fontFamily: "Source Code Pro, monospace",
     colorPrimary: "rgba(255, 180, 84, 1)",
     colorPrimaryActive: "#ffc600",
@@ -26,6 +27,6 @@ const darkTheme = {
     colorBgBase: "#15232d",
     wireframe: true,
   },
-}
+};
 
-export default darkTheme
+export default darkTheme;
