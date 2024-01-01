@@ -42,7 +42,6 @@ function App() {
   const [ids, setIds] = useState([]);
 
   const getColumns = () => {
-    console.log(windowWidth);
     if (windowWidth <= 576) {
       return 1; // One column for xs screens
     } else if (windowWidth <= 768) {
@@ -65,10 +64,23 @@ function App() {
     }, []);
   };
 
-  useEffect(() => {
-    const groupedData = groupByColumns(data.flat());
-    setData(groupedData);
-  }, [windowWidth]);
+  const preloadImages = async (images) => {
+    const timeout = 100; // .1 second
+
+    await Promise.all(
+      images.map((img) => {
+        return new Promise((resolve) => {
+          const image = new window.Image();
+          image.onload = resolve;
+          image.onerror = () => resolve(null); // Ignore errors
+          image.src = img.url;
+
+          // Resolve the promise after the timeout, even if the image hasn't loaded
+          setTimeout(resolve, timeout);
+        });
+      })
+    );
+  };
 
   const fetchImages = async () => {
     try {
@@ -87,6 +99,9 @@ function App() {
 
           const images = groupByColumns(result.data.slice(0, 48));
           const remainingIds = result.data.slice(48).map((item) => item.id);
+
+          await preloadImages(images.flat());
+
           setData(images);
           setIds(remainingIds);
         } else {
@@ -100,10 +115,7 @@ function App() {
             result.data.map((item) => item.metadata)
           );
 
-          // Preload images
-          newImages.flat().forEach((img) => {
-            new window.Image().src = img.url;
-          });
+          await preloadImages(newImages.flat());
 
           setData((oldData) => [...oldData, ...newImages]);
           setIds(remainingIds);
@@ -121,6 +133,11 @@ function App() {
   };
 
   useEffect(() => {
+    const groupedData = groupByColumns(data.flat());
+    setData(groupedData);
+  }, [windowWidth]);
+
+  useEffect(() => {
     fetchImages();
   }, [search]);
 
@@ -133,6 +150,7 @@ function App() {
 
     return (
       <Card
+        style={{ flex: 1 }}
         cover={
           <Image
             src={img.url}
@@ -141,20 +159,10 @@ function App() {
             onLoad={handleImageLoad}
           />
         }
-        title={
-          size && (
-            <p>
-              Size: {size.width}x{size.height}
-            </p>
-          )
-        }
+        title={size ? `Size: ${size.width}x${size.height}` : "Loading..."}
       >
         <Card.Meta
-          description={
-            <>
-              <Tooltip title={img.caption}>{img.caption}</Tooltip>
-            </>
-          }
+          description={<Tooltip title={img.caption}>{img.caption}</Tooltip>}
         />
       </Card>
     );
@@ -162,16 +170,14 @@ function App() {
 
   const renderItem = (index, item) => {
     return (
-      <Row key={index}>
+      <Row key={index} gutter={[16, 16]} style={{ margin: "8px" }}>
         {item.map((img, i) => (
-          <Col span={24 / getColumns()} key={i}>
-            <Card cover={<ImageComponent img={img} />}>
-              <Card.Meta
-                description={
-                  <Tooltip title={img.caption}>{img.caption}</Tooltip>
-                }
-              />
-            </Card>
+          <Col
+            span={24 / getColumns()}
+            key={i}
+            style={{ display: "flex", flexDirection: "column" }}
+          >
+            <ImageComponent img={img} />
           </Col>
         ))}
       </Row>
@@ -193,6 +199,8 @@ function App() {
             allowClear
           />
         </Header>
+      </Layout>
+      <Layout>
         <Content style={{ height: "calc(100vh - 64px)" }}>
           <Image.PreviewGroup>
             {data.length === 0 ? (
@@ -203,8 +211,9 @@ function App() {
                 endReached={fetchImages}
                 style={{ height: "100%" }}
                 itemContent={renderItem}
-                overscan={3}
                 totalCount={imagesTotal}
+                overscan={2}
+                atBottomThreshold={500}
               />
             )}
           </Image.PreviewGroup>
