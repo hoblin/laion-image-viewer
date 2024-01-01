@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Virtuoso } from "react-virtuoso";
 import {
+  message,
   ConfigProvider,
   Input,
   Image,
@@ -10,6 +11,7 @@ import {
   Col,
   Card,
   Tooltip,
+  Empty,
 } from "antd";
 import "./App.css";
 
@@ -33,40 +35,46 @@ function App() {
   };
 
   const fetchImages = async () => {
-    if (search !== "") {
-      if (ids.length === 0) {
-        const result = await axios.post("https://knn.laion.ai/knn-service", {
-          num_images: 48,
-          num_result_ids: imagesTotal,
-          modality: "image",
-          indice_name: "laion5B-H-14",
-          text: search,
-          deduplicate: true,
-          use_safety_model: false,
-          use_violence_detector: false,
-        });
+    try {
+      if (search !== "") {
+        if (ids.length === 0) {
+          const result = await axios.post("https://knn.laion.ai/knn-service", {
+            num_images: 48,
+            num_result_ids: imagesTotal,
+            modality: "image",
+            indice_name: "laion5B-H-14",
+            text: search,
+            deduplicate: true,
+            use_safety_model: false,
+            use_violence_detector: false,
+          });
 
-        const images = groupBySix(result.data.slice(0, 48));
-        const remainingIds = result.data.slice(48).map((item) => item.id);
-        setData(images);
-        setIds(remainingIds);
-      } else {
-        const nextBatchIds = ids.slice(0, 48);
-        const remainingIds = ids.slice(48);
-        const result = await axios.post("https://knn.laion.ai/metadata", {
-          ids: nextBatchIds,
-          indice_name: "laion5B-H-14",
-        });
-        const newImages = groupBySix(result.data.map((item) => item.metadata));
+          const images = groupBySix(result.data.slice(0, 48));
+          const remainingIds = result.data.slice(48).map((item) => item.id);
+          setData(images);
+          setIds(remainingIds);
+        } else {
+          const nextBatchIds = ids.slice(0, 48);
+          const remainingIds = ids.slice(48);
+          const result = await axios.post("https://knn.laion.ai/metadata", {
+            ids: nextBatchIds,
+            indice_name: "laion5B-H-14",
+          });
+          const newImages = groupBySix(
+            result.data.map((item) => item.metadata)
+          );
 
-        // Preload images
-        newImages.flat().forEach((img) => {
-          new window.Image().src = img.url;
-        });
+          // Preload images
+          newImages.flat().forEach((img) => {
+            new window.Image().src = img.url;
+          });
 
-        setData((oldData) => [...oldData, ...newImages]);
-        setIds(remainingIds);
+          setData((oldData) => [...oldData, ...newImages]);
+          setIds(remainingIds);
+        }
       }
+    } catch (error) {
+      message.error(`An error occurred: ${error.message}`);
     }
   };
 
@@ -146,14 +154,18 @@ function App() {
         </Header>
         <Content style={{ height: "calc(100vh - 64px)" }}>
           <Image.PreviewGroup>
-            <Virtuoso
-              data={data}
-              endReached={fetchImages}
-              style={{ height: "100%" }}
-              itemContent={renderItem}
-              overscan={3}
-              totalCount={imagesTotal}
-            />
+            {data.length === 0 ? (
+              <Empty description="Enter a search term and hit Enter to load images" />
+            ) : (
+              <Virtuoso
+                data={data}
+                endReached={fetchImages}
+                style={{ height: "100%" }}
+                itemContent={renderItem}
+                overscan={3}
+                totalCount={imagesTotal}
+              />
+            )}
           </Image.PreviewGroup>
         </Content>
       </Layout>
