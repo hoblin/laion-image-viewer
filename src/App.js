@@ -13,6 +13,7 @@ import {
   Tooltip,
   Empty,
 } from "antd";
+import ReactGA from "react-ga4";
 import "./App.css";
 
 import theme from "./theme";
@@ -133,11 +134,21 @@ function App() {
   };
 
   useEffect(() => {
+    ReactGA.initialize("G-9B0GPT2XKD");
+    ReactGA.send({ hitType: "pageview", page: window.location.pathname });
+  }, []);
+
+  useEffect(() => {
     const groupedData = groupByColumns(data.flat());
     setData(groupedData);
   }, [windowWidth]);
 
   useEffect(() => {
+    ReactGA.event({
+      category: "Search",
+      action: "Search term",
+      label: search,
+    });
     fetchImages();
   }, [search]);
 
