@@ -150,6 +150,10 @@ function App() {
   }, [windowWidth]);
 
   useEffect(() => {
+    // Blur the active element to hide the keyboard
+    if (document.activeElement) {
+      document.activeElement.blur();
+    }
     ReactGA.event({
       category: "Search",
       action: "Search term",
