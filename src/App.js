@@ -53,7 +53,7 @@ function App() {
       } else {
         const nextBatchIds = ids.slice(0, 48);
         const remainingIds = ids.slice(48);
-        const result = await axios.post("https://knn.laion.ai//metadata", {
+        const result = await axios.post("https://knn.laion.ai/metadata", {
           ids: nextBatchIds,
           indice_name: "laion5B-H-14",
         });
@@ -71,7 +71,6 @@ function App() {
   };
 
   const handleSearch = (value) => {
-    console.log(value);
     setIds([]);
     setData([]);
     setSearch(value);
