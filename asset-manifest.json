@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/laion-image-viewer/static/css/main.4f17555c.css",
-    "main.js": "/laion-image-viewer/static/js/main.d0345855.js",
+    "main.js": "/laion-image-viewer/static/js/main.852f7a8b.js",
     "static/js/787.ca3f1cab.chunk.js": "/laion-image-viewer/static/js/787.ca3f1cab.chunk.js",
     "service-worker.js": "/laion-image-viewer/service-worker.js",
     "index.html": "/laion-image-viewer/index.html",
     "main.4f17555c.css.map": "/laion-image-viewer/static/css/main.4f17555c.css.map",
-    "main.d0345855.js.map": "/laion-image-viewer/static/js/main.d0345855.js.map",
+    "main.852f7a8b.js.map": "/laion-image-viewer/static/js/main.852f7a8b.js.map",
     "787.ca3f1cab.chunk.js.map": "/laion-image-viewer/static/js/787.ca3f1cab.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.4f17555c.css",
-    "static/js/main.d0345855.js"
+    "static/js/main.852f7a8b.js"
   ]
 }
