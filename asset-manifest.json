@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/laion-image-viewer/static/css/main.f855e6bc.css",
+    "main.js": "/laion-image-viewer/static/js/main.9273b497.js",
+    "static/js/787.ca3f1cab.chunk.js": "/laion-image-viewer/static/js/787.ca3f1cab.chunk.js",
+    "service-worker.js": "/laion-image-viewer/service-worker.js",
+    "index.html": "/laion-image-viewer/index.html",
+    "main.f855e6bc.css.map": "/laion-image-viewer/static/css/main.f855e6bc.css.map",
+    "main.9273b497.js.map": "/laion-image-viewer/static/js/main.9273b497.js.map",
+    "787.ca3f1cab.chunk.js.map": "/laion-image-viewer/static/js/787.ca3f1cab.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f855e6bc.css",
+    "static/js/main.9273b497.js"
+  ]
+}
