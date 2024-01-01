@@ -21,18 +21,54 @@ const { Header, Content } = Layout;
 
 const imagesTotal = 6000;
 
+const useWindowWidth = () => {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return windowWidth;
+};
+
 function App() {
+  const windowWidth = useWindowWidth();
   const [search, setSearch] = useState("");
   const [data, setData] = useState([]);
   const [ids, setIds] = useState([]);
 
-  const groupBySix = (data) => {
+  const getColumns = () => {
+    console.log(windowWidth);
+    if (windowWidth <= 576) {
+      return 1; // One column for xs screens
+    } else if (windowWidth <= 768) {
+      return 2; // Two columns for sm screens
+    } else if (windowWidth <= 1024) {
+      return 4; // Two columns for sm screens
+    } else if (windowWidth < 3840) {
+      return 6; // Two columns for sm screens
+    } else {
+      return 12; // Six columns for md screens and up
+    }
+  };
+
+  const groupByColumns = (data) => {
+    const columns = getColumns();
     return data.reduce((acc, curr, i) => {
-      if (i % 6 === 0) acc.push([curr]);
+      if (i % columns === 0) acc.push([curr]);
       else acc[acc.length - 1].push(curr);
       return acc;
     }, []);
   };
+
+  useEffect(() => {
+    const groupedData = groupByColumns(data.flat());
+    setData(groupedData);
+  }, [windowWidth]);
 
   const fetchImages = async () => {
     try {
@@ -49,7 +85,7 @@ function App() {
             use_violence_detector: false,
           });
 
-          const images = groupBySix(result.data.slice(0, 48));
+          const images = groupByColumns(result.data.slice(0, 48));
           const remainingIds = result.data.slice(48).map((item) => item.id);
           setData(images);
           setIds(remainingIds);
@@ -60,7 +96,7 @@ function App() {
             ids: nextBatchIds,
             indice_name: "laion5B-H-14",
           });
-          const newImages = groupBySix(
+          const newImages = groupByColumns(
             result.data.map((item) => item.metadata)
           );
 
@@ -128,7 +164,7 @@ function App() {
     return (
       <Row key={index}>
         {item.map((img, i) => (
-          <Col span={4} key={i}>
+          <Col span={24 / getColumns()} key={i}>
             <Card cover={<ImageComponent img={img} />}>
               <Card.Meta
                 description={
@@ -145,7 +181,12 @@ function App() {
   return (
     <ConfigProvider theme={{ ...theme }}>
       <Layout className="layout">
-        <Header>
+        <Header
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           <Input.Search
             placeholder="Search for images"
             onSearch={handleSearch}
