@@ -33,6 +33,10 @@ const imagesTotal = 10000;
 const perPage = 300;
 const timeOut = 1000;
 const preloadOffset = 2000;
+const defaultMinDimensions = {
+  width: 300,
+  height: 300,
+};
 
 const useWindowWidth = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -54,10 +58,7 @@ function App() {
   const [data, setData] = useState([]);
   const [ids, setIds] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [minDimensions, setMinDimensions] = useState({
-    width: 500,
-    height: 500,
-  });
+  const [minDimensions, setMinDimensions] = useState(defaultMinDimensions);
 
   const getColumns = () => {
     if (windowWidth <= 576) {
