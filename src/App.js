@@ -31,7 +31,7 @@ const { Title, Text } = Typography;
 
 const imagesTotal = 10000;
 const perPage = 300;
-const timeOut = 1000;
+const timeOut = 2000;
 const preloadOffset = 2000;
 const defaultMinDimensions = {
   width: 300,
@@ -102,8 +102,11 @@ function App() {
           image.onerror = () => resolve(null); // Ignore errors
           image.src = img.url;
 
-          // Resolve the promise with null after the timeout, even if the image hasn't loaded
-          setTimeout(() => resolve(null), timeOut);
+          // Resolve the promise with null after the timeout, and stop loading the image
+          setTimeout(() => {
+            image.src = "";
+            resolve(null);
+          }, timeOut);
         });
       })
     );
@@ -113,9 +116,9 @@ function App() {
 
   const fetchImages = async () => {
     try {
-      setLoading(true);
       if (search !== "") {
         if (ids.length === 0) {
+          setLoading(true);
           const result = await axios.post("https://knn.laion.ai/knn-service", {
             num_images: perPage,
             num_result_ids: imagesTotal,
@@ -143,6 +146,7 @@ function App() {
         } else {
           const nextBatchIds = ids.slice(0, perPage);
           const remainingIds = ids.slice(perPage);
+          setLoading(true);
           const result = await axios.post("https://knn.laion.ai/metadata", {
             ids: nextBatchIds,
             indice_name: "laion5B-H-14",
@@ -151,8 +155,14 @@ function App() {
             result.data.map((item) => item.metadata)
           );
 
-          setData(groupByColumns([...data.flat(), ...newImages]));
-          setIds(remainingIds);
+          // Trigger next batch if all images was filtered out
+          if (newImages.length === 0) {
+            setIds(remainingIds);
+            fetchImages();
+          } else {
+            setData(groupByColumns([...data.flat(), ...newImages]));
+            setIds(remainingIds);
+          }
         }
       }
     } catch (error) {
