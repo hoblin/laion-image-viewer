@@ -22,7 +22,10 @@ import theme from "./theme";
 
 const { Header, Content } = Layout;
 
-const imagesTotal = 6000;
+const imagesTotal = 10000;
+const perPage = 300;
+const timeOut = 1000;
+const preloadOffset = 2000;
 
 const useWindowWidth = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -69,21 +72,26 @@ function App() {
   };
 
   const preloadImages = async (images) => {
-    const timeout = 100; // .1 second
-
-    await Promise.all(
+    const loadedImages = await Promise.all(
       images.map((img) => {
         return new Promise((resolve) => {
           const image = new window.Image();
-          image.onload = resolve;
+          image.onload = () =>
+            resolve({
+              ...img,
+              width: image.naturalWidth,
+              height: image.naturalHeight,
+            });
           image.onerror = () => resolve(null); // Ignore errors
           image.src = img.url;
 
-          // Resolve the promise after the timeout, even if the image hasn't loaded
-          setTimeout(resolve, timeout);
+          // Resolve the promise with null after the timeout, even if the image hasn't loaded
+          setTimeout(() => resolve(null), timeOut);
         });
       })
     );
+
+    return loadedImages.filter(Boolean); // Remove null values
   };
 
   const fetchImages = async () => {
@@ -92,7 +100,7 @@ function App() {
       if (search !== "") {
         if (ids.length === 0) {
           const result = await axios.post("https://knn.laion.ai/knn-service", {
-            num_images: 48,
+            num_images: perPage,
             num_result_ids: imagesTotal,
             modality: "image",
             indice_name: "laion5B-H-14",
@@ -102,27 +110,25 @@ function App() {
             use_violence_detector: false,
           });
 
-          const images = groupByColumns(result.data.slice(0, 48));
-          const remainingIds = result.data.slice(48).map((item) => item.id);
+          const images = await preloadImages(result.data.slice(0, perPage));
+          const remainingIds = result.data
+            .slice(perPage)
+            .map((item) => item.id);
 
-          await preloadImages(images.flat());
-
-          setData(images);
+          setData(groupByColumns(images));
           setIds(remainingIds);
         } else {
-          const nextBatchIds = ids.slice(0, 48);
-          const remainingIds = ids.slice(48);
+          const nextBatchIds = ids.slice(0, perPage);
+          const remainingIds = ids.slice(perPage);
           const result = await axios.post("https://knn.laion.ai/metadata", {
             ids: nextBatchIds,
             indice_name: "laion5B-H-14",
           });
-          const newImages = groupByColumns(
+          const newImages = await preloadImages(
             result.data.map((item) => item.metadata)
           );
 
-          await preloadImages(newImages.flat());
-
-          setData((oldData) => [...oldData, ...newImages]);
+          setData(groupByColumns([...data.flat(), ...newImages]));
           setIds(remainingIds);
         }
       }
@@ -147,7 +153,7 @@ function App() {
   useEffect(() => {
     const groupedData = groupByColumns(data.flat());
     setData(groupedData);
-  }, [windowWidth]);
+  }, [windowWidth]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Blur the active element to hide the keyboard
@@ -156,11 +162,10 @@ function App() {
     }
     ReactGA.event({
       category: "Search",
-      action: "Search term",
-      label: search,
+      action: `Search for ${search}`,
     });
     fetchImages();
-  }, [search]);
+  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ImageComponent = ({ img }) => {
     const [size, setSize] = useState(null);
@@ -235,8 +240,8 @@ function App() {
                 style={{ height: "100%" }}
                 itemContent={renderItem}
                 totalCount={imagesTotal}
-                overscan={2}
-                atBottomThreshold={500}
+                overscan={4}
+                atBottomThreshold={preloadOffset}
               />
             )}
           </Image.PreviewGroup>
