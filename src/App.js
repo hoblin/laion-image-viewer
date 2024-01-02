@@ -131,8 +131,14 @@ function App() {
             .slice(perPage)
             .map((item) => item.id);
 
-          setData(groupByColumns(images));
-          setIds(remainingIds);
+          // Trigger next batch if all images was filtered out
+          if (images.length === 0) {
+            setIds(remainingIds);
+            fetchImages();
+          } else {
+            setData(groupByColumns(images));
+            setIds(remainingIds);
+          }
         } else {
           const nextBatchIds = ids.slice(0, perPage);
           const remainingIds = ids.slice(perPage);
