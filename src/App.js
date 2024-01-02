@@ -12,7 +12,13 @@ import {
   Card,
   Tooltip,
   Empty,
+  Button,
+  Popover,
+  Typography,
+  Space,
+  Flex,
 } from "antd";
+import { SettingOutlined } from "@ant-design/icons";
 import ReactGA from "react-ga4";
 
 import { fallbackImage } from "./constants";
@@ -21,6 +27,7 @@ import "./App.css";
 import theme from "./theme";
 
 const { Header, Content } = Layout;
+const { Title, Text } = Typography;
 
 const imagesTotal = 10000;
 const perPage = 300;
@@ -47,6 +54,10 @@ function App() {
   const [data, setData] = useState([]);
   const [ids, setIds] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [minDimensions, setMinDimensions] = useState({
+    width: 500,
+    height: 500,
+  });
 
   const getColumns = () => {
     if (windowWidth <= 576) {
@@ -77,11 +88,16 @@ function App() {
         return new Promise((resolve) => {
           const image = new window.Image();
           image.onload = () =>
-            resolve({
-              ...img,
-              width: image.naturalWidth,
-              height: image.naturalHeight,
-            });
+            resolve(
+              image.naturalWidth >= minDimensions.width &&
+                image.naturalHeight >= minDimensions.height
+                ? {
+                    ...img,
+                    width: image.naturalWidth,
+                    height: image.naturalHeight,
+                  }
+                : null
+            );
           image.onerror = () => resolve(null); // Ignore errors
           image.src = img.url;
 
@@ -168,12 +184,6 @@ function App() {
   }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const ImageComponent = ({ img }) => {
-    const [size, setSize] = useState(null);
-
-    const handleImageLoad = ({ target: img }) => {
-      setSize({ width: img.naturalWidth, height: img.naturalHeight });
-    };
-
     return (
       <Card
         style={{ flex: 1 }}
@@ -182,11 +192,10 @@ function App() {
             src={img.url}
             placeholder
             preview={{ mask: false }}
-            onLoad={handleImageLoad}
             fallback={fallbackImage}
           />
         }
-        title={size ? `Size: ${size.width}x${size.height}` : "Loading..."}
+        title={`Size: ${img.width}x${img.height}`}
       >
         <Card.Meta
           description={<Tooltip title={img.caption}>{img.caption}</Tooltip>}
@@ -220,6 +229,49 @@ function App() {
             alignItems: "center",
           }}
         >
+          <Popover
+            content={
+              <Space direction="vertical" style={{ width: "200px" }}>
+                <Title level={5}>Minimum size</Title>
+                <Flex align="center" justify="space-between">
+                  <Text>Width</Text>
+                  <Input
+                    style={{ width: "5em" }}
+                    type="number"
+                    value={minDimensions.width}
+                    onChange={(e) =>
+                      setMinDimensions({
+                        ...minDimensions,
+                        width: e.target.value,
+                      })
+                    }
+                  />
+                </Flex>
+                <Flex align="center" justify="space-between">
+                  <Text>Height</Text>
+                  <Input
+                    style={{ width: "5em" }}
+                    type="number"
+                    value={minDimensions.height}
+                    onChange={(e) =>
+                      setMinDimensions({
+                        ...minDimensions,
+                        height: e.target.value,
+                      })
+                    }
+                  />
+                </Flex>
+              </Space>
+            }
+            title="Filters"
+            trigger="click"
+            placement="bottomRight"
+          >
+            <Button
+              style={{ marginRight: "16px" }}
+              icon={<SettingOutlined />}
+            />
+          </Popover>
           <Input.Search
             placeholder="Search for images"
             onSearch={handleSearch}
