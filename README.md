@@ -1,3 +1,11 @@
+> **ARCHIVED - NO LONGER FUNCTIONAL**
+>
+> This application relied on LAION's public CLIP retrieval API at `knn.laion.ai`, which was taken offline on December 19, 2023 following the discovery of CSAM in the LAION-5B dataset by Stanford Internet Observatory. The API has not been restored and LAION has not announced plans to do so.
+>
+> For more information, see [LAION's statement on Re-LAION-5B](https://laion.ai/blog/relaion-5b/).
+
+---
+
 # LAION-5B CLIP-Retrieval Interface
 
 This application serves as an interface to the CLIP-retrieval API of the LAION-5B dataset. LAION-5B is a large-scale dataset consisting of 5.85 billion CLIP-filtered image-text pairs, designed for research purposes. This interface allows users to search the dataset using text queries, which are converted to CLIP embeddings and used to query a k-nearest neighbors (knn) index of CLIP image embeddings.
